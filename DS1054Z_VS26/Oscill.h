@@ -6,7 +6,7 @@
 #pragma comment(lib, "include/visa64.lib")
 
 #pragma once
-using namespace std; // старт
+using namespace std;
 
 
 class OscilloscopeRigol_DS1054Z {
