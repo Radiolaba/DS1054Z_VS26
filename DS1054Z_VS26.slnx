@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="DS1054Z_VS26/DS1054Z_VS26.vcxproj" Id="6ad4a6c8-0b5f-4444-863d-62fcb64e793a" />
+</Solution>
