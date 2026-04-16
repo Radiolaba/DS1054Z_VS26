@@ -10,11 +10,17 @@ int main()			// главная функция
 	Sleep(600);			// пауза 600 мс
 	oscill.setup();		// вызов метода настройки осциллографа
 	Sleep(600);			// пауза 600 мс
-	std::vector<uint16_t> data = oscill.getRaw8BitSignal(1000, 100000);
-	saveSignalToTxt(to_double_vector(data),200e-9, "test.txt");
-	//auto res = ;	// вызов метода чтения данных
-	//запрос сырых данных из памяти осциллографа и возвращение vector<uint16_t>
 
+	{
+		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 100000);
+		system("del ch1.txt");
+		saveSignalToTxt(to_double_vector(data1), 200e-9, "ch1.txt");
+	}
+	{
+		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, 1, 100000);
+		system("del ch2.txt");
+		saveSignalToTxt(to_double_vector(data2), 200e-9, "ch2.txt");
+	}
 	return 0;
 }
 // необходимо добавить преобразование vector<uint16_t> в пары (time, voltage) и запись их в файл

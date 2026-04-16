@@ -16,7 +16,7 @@ public:
 	void disconnect();
 	void setup();
 	bool trigger();
-	vector<uint16_t> getRaw8BitSignal(const uint16_t& EMPTY_TICKS, const uint32_t& TICKS);
+	vector<uint16_t> getRaw8BitSignal(const unsigned short & CHANNEL, const uint16_t& EMPTY_TICKS, const uint32_t& TICKS);
 	double rawTickToVolts(double signal_tick);
 
 private:

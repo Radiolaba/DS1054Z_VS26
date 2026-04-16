@@ -128,22 +128,30 @@ bool OscilloscopeRigol_DS1054Z::trigger() {
 }
 
 
-vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(const uint16_t& EMPTY_TICKS, const uint32_t& TICKS) {
-	vector<uint16_t> result(TICKS, 0);
+vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(
+	const unsigned short& CHANNEL,
+	const uint16_t& OFFSET, 
+	const uint32_t& TICKS
+) {
+	if (CHANNEL > 4 || CHANNEL < 1) {
+		throw "Incorrect channel number!";
+	}
 
-	uint32_t startRead = uint32_t(uint32_t(1000000) / 2) - uint32_t(EMPTY_TICKS);
-	const string WAV_RANGE = ":WAV:RANG " + to_string(startRead) + "," + to_string(TICKS) + "\n";
+	vector<uint16_t> result(TICKS, 0);
+	const string START = ":WAV:STAR " + to_string(OFFSET) + "\n";
+	const string FINISH = ":WAV:STOP " + to_string(TICKS) + "\n";
+	const string SOURCE_CHAN = ":WAVeform:SOURce CHANnel" + to_string(CHANNEL) + "\n";
 
 	ViUInt32 bytes_read;
 	unsigned char read_buf[301000];
 
 	viPrintf(DEVICE, "*CLS\n");
 	viPrintf(DEVICE, ":STOP\n"); // остановка записи
-	viPrintf(DEVICE, ":WAV:SOUR CHAN1\n"); // канал считывания данных
+	viPrintf(DEVICE, SOURCE_CHAN.c_str()); // канал считывания данных
 	viPrintf(DEVICE, ":WAV:MODE RAW\n"); // сырые данные без обработки
 	viPrintf(DEVICE, ":WAV:FORM BYTE\n"); //в виде байтов по одному на отсчет
-	viPrintf(DEVICE, ":WAV:STAR 1\n"); //
-	viPrintf(DEVICE, ":WAV:STOP 100000\n"); //
+	viPrintf(DEVICE, START.c_str()); //
+	viPrintf(DEVICE, FINISH.c_str()); //
 	viPrintf(DEVICE, ":WAV:DATA?\n"); //запрос данных
 	
 
@@ -164,7 +172,7 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(const uint16_t& EMP
 		throw "Wrong format data packet from oscill!";
 	}
 	else {
-		if (uint32_t(data_len / 2) > TICKS)
+		if (uint32_t(data_len) > TICKS)
 			throw "Data packet longer than demanded ticks";
 	}
 	// Извлечение int16 из байтов (big-endian)
@@ -174,7 +182,6 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(const uint16_t& EMP
 		result[i] = data_ptr[i];
 	}
 	viPrintf(DEVICE, ":RUN\n");
-
 	return result;
 }
 

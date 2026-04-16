@@ -1,5 +1,4 @@
 clc; close all; clear;
 ch1 = load('ch1.txt'); ch2 = load('ch2.txt');
-plot(ch1);
-hold on;
-plot(ch2);
+plot(d);
+plot(ch2
