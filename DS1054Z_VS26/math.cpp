@@ -11,7 +11,7 @@ std::vector<double> to_double_vector(const std::vector<uint16_t>& input)
 
     std::transform(input.begin(), input.end(), std::back_inserter(output), [](uint16_t x)
         {
-            return static_cast<double>(x);
+            return static_cast<double>(x-128);
         }
     );
 

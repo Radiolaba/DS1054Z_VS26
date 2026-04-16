@@ -55,18 +55,19 @@ void OscilloscopeRigol_DS1054Z::setup() {
 		":TIMebase[:MAIN]:SCALe 0.0002\n",  // horisontal scale
 
 		":ACQuire:TYPE HRESolution\n",// 
-		":ACQuire:MDEPth 12000\n",
+		":ACQuire:MDEPth 120000\n",
 		":TRIGger:COUPling DC\n",//
 		":TRIGger:MODE EDGE\n",//
-		":TRIGger:SWEep SINGle\n", //
+		//":TRIGger:SWEep SINGle\n", //
 		":TRIGger:HOLDoff 0.0000002\n",//
 		//":TRIG:SING:EDGE:SOUR CH2\n",
-		":TRIGger:EDGe:LEVel 0.16\n",//
+		":TRIGger:EDGe:LEVel 0\n",//
 		":CHANnel1:SCALe 0.5\n",//
 	};
 
 	//											Начинаем настройку осцилографа
-	for (string command : setup_commands) {
+	for (string command : setup_commands) 
+	{
 		viPrintf(DEVICE, command.c_str());
 		Sleep(100);
 	}
@@ -127,7 +128,7 @@ bool OscilloscopeRigol_DS1054Z::trigger() {
 }
 
 
-vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw16BitSignal(const uint16_t& EMPTY_TICKS, const uint32_t& TICKS) {
+vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(const uint16_t& EMPTY_TICKS, const uint32_t& TICKS) {
 	vector<uint16_t> result(TICKS, 0);
 
 	uint32_t startRead = uint32_t(uint32_t(1000000) / 2) - uint32_t(EMPTY_TICKS);
@@ -136,12 +137,13 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw16BitSignal(const uint16_t& EM
 	ViUInt32 bytes_read;
 	unsigned char read_buf[301000];
 
-
 	viPrintf(DEVICE, "*CLS\n");
 	viPrintf(DEVICE, ":STOP\n"); // остановка записи
 	viPrintf(DEVICE, ":WAV:SOUR CHAN1\n"); // канал считывания данных
 	viPrintf(DEVICE, ":WAV:MODE RAW\n"); // сырые данные без обработки
-	viPrintf(DEVICE, ":WAV:FORM BYTE\n"); //в виде байтов (парами)
+	viPrintf(DEVICE, ":WAV:FORM BYTE\n"); //в виде байтов по одному на отсчет
+	viPrintf(DEVICE, ":WAV:STAR 1\n"); //
+	viPrintf(DEVICE, ":WAV:STOP 100000\n"); //
 	viPrintf(DEVICE, ":WAV:DATA?\n"); //запрос данных
 	
 
@@ -168,11 +170,10 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw16BitSignal(const uint16_t& EM
 	// Извлечение int16 из байтов (big-endian)
 	const unsigned char* data_ptr = read_buf + 2 + n_digits;
 
-	for (size_t i = 0; i < data_len; i += 2) {
-		uint16_t raw16 = (data_ptr[i + 1] << 8) | (data_ptr[i]);  // 16-бит слово
-		result[i / 2] = (uint16_t)(raw16 & 0x3FFF);
+	for (size_t i = 0; i < data_len; i += 1) {
+		result[i] = data_ptr[i];
 	}
-	viPrintf(DEVICE, ":WAV:END\n");
+	viPrintf(DEVICE, ":RUN\n");
 
 	return result;
 }
