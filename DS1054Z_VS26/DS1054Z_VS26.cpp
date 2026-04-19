@@ -12,12 +12,12 @@ int main()			// главная функция
 	Sleep(600);			// пауза 600 мс
 
 	{
-		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 100000);
+		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 60000);
 		system("del ch1.txt");
 		saveSignalToTxt(to_double_vector(data1), 200e-9, "ch1.txt");
 	}
 	{
-		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, 1, 100000);
+		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, 1, 60000);
 		system("del ch2.txt");
 		saveSignalToTxt(to_double_vector(data2), 200e-9, "ch2.txt");
 	}

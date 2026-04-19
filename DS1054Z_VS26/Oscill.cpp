@@ -9,10 +9,10 @@ using namespace std;
 // пойдет
 void OscilloscopeRigol_DS1054Z::connect()
 {
-	cout << "Started OWON6102A connection" << endl; // OWON6102A connection has been started
+	cout << "Started DS1054Z connection" << endl; // сообщение о начале соединения
 	// Адрес прибора
-	//const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA231001099::INSTR"; //домашний осцилл
-	const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA255005161::INSTR"; //осцилл в лаборатории
+	const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA231001099::INSTR"; //домашний осцилл
+	//const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA255005161::INSTR"; //осцилл в лаборатории
 
 	DEVICE = VI_NULL;
 	RESOURCE_MANAGER = VI_NULL;
@@ -31,7 +31,7 @@ void OscilloscopeRigol_DS1054Z::connect()
 		//throw "Device not found!\n";
 	}
 	else {
-		printf("OWON6102A connected succesfully\n"); //Oscilloscope has been connected
+		printf("DS1054Z connected succesfully\n"); //Oscilloscope has been connected
 		OscilloscopeRigol_DS1054Z::connection = true;
 
 	}
@@ -47,22 +47,24 @@ void OscilloscopeRigol_DS1054Z::disconnect() {
 }
 
 void OscilloscopeRigol_DS1054Z::setup() {
-	cout << "Started setup OWON6102A" << endl; // OWON6102A setup has been started
+	cout << "Started setup DS1054Z" << endl; // сообщение о начале настройки
 
 
 
 	string setup_commands[] = {
-		":TIMebase[:MAIN]:SCALe 0.0002\n",  // horisontal scale
-
-		":ACQuire:TYPE HRESolution\n",// 
-		":ACQuire:MDEPth 120000\n",
-		":TRIGger:COUPling DC\n",//
-		":TRIGger:MODE EDGE\n",//
-		//":TRIGger:SWEep SINGle\n", //
-		":TRIGger:HOLDoff 0.0000002\n",//
-		//":TRIG:SING:EDGE:SOUR CH2\n",
-		":TRIGger:EDGe:LEVel 0\n",//
-		":CHANnel1:SCALe 0.5\n",//
+		//":TIMebase[:MAIN]:SCALe 0.0002\n",  // развертка по времени
+		":ACQuire:TYPE HRESolution\n",// режим сбора: Высокое разрешение
+		":ACQuire:MDEPth 60000\n",// глубина записи: 60k
+		//":TRIGger:COUPling DC\n",// связь для триггера
+		//":TRIGger:MODE EDGE\n",// тип триггера: по фронту
+		//":TRIGger:SWEep SINGle\n", // тип триггера: Single
+		//":TRIGger:HOLDoff 0.0000002\n",// удержание триггера: 16нс
+		//":TRIGger:EDGe:LEVel 0\n",// уровень триггера
+		//":CHANnel1:SCALe 0.5\n",// развертка 1 канал по напряжению
+		":CHANnel1:DISPlay ON\n", // включение 1 канала
+		":CHANnel2:DISPlay ON\n", // включение 2 канала
+		":CHANnel1:COUPling AC\n", // тип связи 1 канала: AC
+		":CHANnel2:COUPling AC\n", // тип связи 2 канала: AC
 	};
 
 	//											Начинаем настройку осцилографа
@@ -75,19 +77,16 @@ void OscilloscopeRigol_DS1054Z::setup() {
 	//											Передача стартовых команд
 	cout << "Inquire" << "                                 " << '|' << "  " << "Answer\n";
 	cout << "-----------------------------------------------------\n";
-	ask_and_print_answer(":TIMebase:MAIN:SCALe? \n");
-	ask_and_print_answer(":ACQuire:TYPE?\n");
-	ask_and_print_answer(":CHANnel1:COUPling?\n");
-	//ask_and_print_answer(":CH1:OFFSet?\n");
-	ask_and_print_answer(":TRIGger:MODE?\n");//
-	ask_and_print_answer(":TRIGger:COUPling?\n");//
-	ask_and_print_answer(":TRIGger:SWEep?\n");//
-	ask_and_print_answer(":TRIGger:HOLDoff?\n");//
-	ask_and_print_answer(":ACQuire:MDEPth?\n");//
-	ask_and_print_answer(":CHANnel1:SCALe?\n");//
-	ask_and_print_answer(":TRIGger:EDGe:LEVel?\n");//
-	ask_and_print_answer(":ACQuire:SRATe?\n"); // :ACQuire:SRATe? - покажет отсчеты/сек
-	
+	ask_and_print_answer(":ACQuire:TYPE?\n");			//режим сбора: Высокое разрешение
+	ask_and_print_answer(":ACQuire:MDEPth? \n");		//глубина записи: 60k
+	ask_and_print_answer(":CHANnel1:DISPlay? \n");		//включение 1 канала
+	ask_and_print_answer(":CHANnel2:DISPlay? \n");		//включение 2 канала
+	ask_and_print_answer(":CHANnel1:COUPling? \n");		//тип связи 1 канала: AC
+	ask_and_print_answer(":CHANnel2:COUPling? \n");		//тип связи 2 канала: AC
+	ask_and_print_answer(":CHANnel1:SCALe?\n");			//развертка 1 канала по напряжению
+	ask_and_print_answer(":CHANnel2:SCALe?\n");			//развертка 2 канала по напряжению
+	ask_and_print_answer(":TIMebase:MAIN:SCALe?\n");	//развертка каналов по времени
+	ask_and_print_answer(":ACQuire:SRATe?\n");			//частоты дискретизации
 }
 
 // пойдет
