@@ -47,8 +47,14 @@ void OscilloscopeRigol_DS1054Z::disconnect() {
 	OscilloscopeRigol_DS1054Z::connection = false;
 }
 
+void OscilloscopeRigol_DS1054Z::writeCommand(ViConstString cmd)
+{
+	viPrintf(DEVICE, cmd);
+}
+
 // настройка осциллографа (работает)
-void OscilloscopeRigol_DS1054Z::setup() {
+void OscilloscopeRigol_DS1054Z::setup()
+{
 	cout << "Started setup DS1054Z" << endl; // сообщение о начале настройки
 	string setup_commands[] = {
 		//":TIMebase[:MAIN]:SCALe 0.0002\n",  // развертка по времени
@@ -72,6 +78,8 @@ void OscilloscopeRigol_DS1054Z::setup() {
 		viPrintf(DEVICE, command.c_str());
 		Sleep(100);
 	}
+
+	viPrintf(DEVICE, ":STOP\n"); // остановка перед опросом масшабирования каналов
 
 	//Опрос настроек
 	cout << "Inquire" << "                                 " << '|' << "  " << "Answer\n";
@@ -113,6 +121,25 @@ int OscilloscopeRigol_DS1054Z::ask_and_print_answer(ViConstString inquire)
 	}
 }
 
+//новая функцмя
+double OscilloscopeRigol_DS1054Z::ask_and_get_double(ViConstString inquire)
+{
+	char buffer[256];
+	ViUInt32 bytes_read;
+	ViStatus status;
+
+	viPrintf(DEVICE, inquire);
+	status = viRead(DEVICE, (ViBuf)buffer, 255, &bytes_read);
+
+	if (status < VI_SUCCESS) {
+		printf("Reading error: 0x%08X\n", status);
+		throw std::runtime_error("Error reading double from oscilloscope");
+	}
+
+	buffer[bytes_read] = 0;
+	return atof(buffer); // строка SCPI-ответа → double [web:298]
+}
+
 // нормально
 bool OscilloscopeRigol_DS1054Z::trigger() {
 	char status[16];
@@ -126,11 +153,14 @@ bool OscilloscopeRigol_DS1054Z::trigger() {
 }
 
 
-vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(
+vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal
+(
 	const unsigned short& CHANNEL,
 	const uint16_t& OFFSET, 
 	const uint32_t& TICKS
-) {
+)
+
+{
 	if (CHANNEL > 4 || CHANNEL < 1) {
 		throw "Incorrect channel number!";
 	}
@@ -144,7 +174,7 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(
 	unsigned char read_buf[301000];
 
 	viPrintf(DEVICE, "*CLS\n");
-	viPrintf(DEVICE, ":STOP\n"); // остановка записи
+	//viPrintf(DEVICE, ":STOP\n"); // остановка записи - не нужна, т.к. STOP перед опросом масштабирования и считыванием
 	viPrintf(DEVICE, SOURCE_CHAN.c_str()); // канал считывания данных
 	viPrintf(DEVICE, ":WAV:MODE RAW\n"); // сырые данные без обработки
 	viPrintf(DEVICE, ":WAV:FORM BYTE\n"); //в виде байтов по одному на отсчет
@@ -179,7 +209,7 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal(
 	for (size_t i = 0; i < data_len; i += 1) {
 		result[i] = data_ptr[i];
 	}
-	viPrintf(DEVICE, ":RUN\n");
+	//viPrintf(DEVICE, ":RUN\n"); // не нужно - т.к. после опроса масштабирования и считывания
 	return result;
 }
 
