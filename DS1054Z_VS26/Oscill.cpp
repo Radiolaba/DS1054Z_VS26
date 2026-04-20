@@ -6,7 +6,8 @@
 #include <string>
 
 using namespace std;
-// пойдет
+
+// подключение к осциллографу (работает)
 void OscilloscopeRigol_DS1054Z::connect()
 {
 	cout << "Started DS1054Z connection" << endl; // сообщение о начале соединения
@@ -36,8 +37,8 @@ void OscilloscopeRigol_DS1054Z::connect()
 
 	}
 }
-//
-//// пойдет
+
+// отключение от осциллографа (не используется)
 void OscilloscopeRigol_DS1054Z::disconnect() {
 	cout << "Запущено рассоединение с OWON6102A" << endl; //OWON6102A disconnection has been started
 	viClose(DEVICE);
@@ -46,11 +47,9 @@ void OscilloscopeRigol_DS1054Z::disconnect() {
 	OscilloscopeRigol_DS1054Z::connection = false;
 }
 
+// настройка осциллографа (работает)
 void OscilloscopeRigol_DS1054Z::setup() {
 	cout << "Started setup DS1054Z" << endl; // сообщение о начале настройки
-
-
-
 	string setup_commands[] = {
 		//":TIMebase[:MAIN]:SCALe 0.0002\n",  // развертка по времени
 		":ACQuire:TYPE HRESolution\n",// режим сбора: Высокое разрешение
@@ -67,14 +66,14 @@ void OscilloscopeRigol_DS1054Z::setup() {
 		":CHANnel2:COUPling AC\n", // тип связи 2 канала: AC
 	};
 
-	//											Начинаем настройку осцилографа
-	for (string command : setup_commands) 
+	
+	for (string command : setup_commands) // применение настроек осциллографа
 	{
 		viPrintf(DEVICE, command.c_str());
 		Sleep(100);
 	}
 
-	//											Передача стартовых команд
+	//Опрос настроек
 	cout << "Inquire" << "                                 " << '|' << "  " << "Answer\n";
 	cout << "-----------------------------------------------------\n";
 	ask_and_print_answer(":ACQuire:TYPE?\n");			//режим сбора: Высокое разрешение
