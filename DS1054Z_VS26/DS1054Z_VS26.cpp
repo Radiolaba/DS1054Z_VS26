@@ -11,7 +11,8 @@ int main()			// главная функция
 	oscill.setup();		// вызов метода настройки осциллографа
 	Sleep(600);			// пауза 600 мс
 	
-	
+	oscill.writeCommand(":STOP\n"); // остановка перед считыванием буфера и настроек верт. разрешения каналов
+
 	/*
 	{
 		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 60000); // возвращение отсчетов BYTE-данных, приведенных к uint16_t
@@ -87,6 +88,9 @@ int main()			// главная функция
 		system("del ch2.txt");
 		saveSignalToTxt(ch2_volts, 200e-9, "ch2.txt");
 	}
+
+	oscill.writeCommand(":RUN\n"); // После завершения считывания всех каналов вернуть осциллограф в режим RUN
+
 
 	return 0;
 }
