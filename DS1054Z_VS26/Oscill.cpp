@@ -47,6 +47,8 @@ void OscilloscopeRigol_DS1054Z::disconnect() {
 	OscilloscopeRigol_DS1054Z::connection = false;
 }
 
+//метод-обертка writeCommand для отправки SCPI-команд через объект oscill
+// без прямого доступа к DEVICE (убирает ошибку из-за приватности члена)
 void OscilloscopeRigol_DS1054Z::writeCommand(ViConstString cmd)
 {
 	viPrintf(DEVICE, cmd);
@@ -79,7 +81,7 @@ void OscilloscopeRigol_DS1054Z::setup()
 		Sleep(100);
 	}
 
-	viPrintf(DEVICE, ":STOP\n"); // остановка перед опросом масшабирования каналов
+	viPrintf(DEVICE, ":STOP\n"); // остановка перед опросом масшабирования каналов для фиксации буфера
 
 	//Опрос настроек
 	cout << "Inquire" << "                                 " << '|' << "  " << "Answer\n";
@@ -121,7 +123,7 @@ int OscilloscopeRigol_DS1054Z::ask_and_print_answer(ViConstString inquire)
 	}
 }
 
-//новая функцмя
+//метод для получения параметров вертикального масштабирования в double
 double OscilloscopeRigol_DS1054Z::ask_and_get_double(ViConstString inquire)
 {
 	char buffer[256];
@@ -161,7 +163,8 @@ vector<uint16_t> OscilloscopeRigol_DS1054Z::getRaw8BitSignal
 )
 
 {
-	if (CHANNEL > 4 || CHANNEL < 1) {
+	if (CHANNEL > 4 || CHANNEL < 1)
+	{
 		throw "Incorrect channel number!";
 	}
 

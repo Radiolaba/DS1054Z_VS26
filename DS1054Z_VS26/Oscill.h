@@ -22,8 +22,8 @@ public:
     double rawTickToVolts(double signal_tick);
 
     int ask_and_print_answer(ViConstString inquiry);
-    double ask_and_get_double(ViConstString inquire);
-    void writeCommand(ViConstString cmd);   // ← добавили
+    double ask_and_get_double(ViConstString inquire); // метод для получения параметров вертикального масштабирования в double
+    void writeCommand(ViConstString cmd);   // метод-обертка для отправки SCPI-команд через объект oscill без прямого доступа к DEVICE (убирает ошибку из-за приватности члена)
 
 private:
     ViSession DEVICE;

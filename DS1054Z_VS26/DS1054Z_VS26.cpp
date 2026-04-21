@@ -14,9 +14,9 @@ int main()			// главная функция
 	
 	/*
 	{
-		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 60000);
-		system("del ch1.txt");
-		saveSignalToTxt(to_double_vector(data1), 200e-9, "ch1.txt");
+		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 60000); // возвращение отсчетов BYTE-данных, приведенных к uint16_t
+		system("del ch1.txt"); // очистка/удаление старых данных (или файла?)
+		saveSignalToTxt(to_double_vector(data1), 200e-9, "ch1.txt"); // запись отсчетов в ch1.txt
 	}
 	*/
 
@@ -24,13 +24,13 @@ int main()			// главная функция
 	{
 		// CH1 в вольтах
 
-		// 1. Выбираем CH1 как источник для параметров масштабирования
+		// 1. Выбираем CH1 как источник для параметров вертикального масштабирования
 		oscill.writeCommand(":WAVeform:SOURce CHANnel1\n");
 
-		// 2. Считываем вертикальные параметры CH1
-		double yinc = oscill.ask_and_get_double(":WAVeform:YINCrement?\n");   // В/код [web:298][web:290]
-		double yor = oscill.ask_and_get_double(":WAVeform:YORigin?\n");      // В [web:298][web:290]
-		double yref = oscill.ask_and_get_double(":WAVeform:YREFerence?\n");   // опорный код [web:298][web:290]
+		// 2. Считываем параметры вертикального масштабирования CH1
+		double yinc = oscill.ask_and_get_double(":WAVeform:YINCrement?\n");   // шаг по оси Y между соседними отсчетами, В/отсчет
+		double yor = oscill.ask_and_get_double(":WAVeform:YORigin?\n");      // вертикальное смещение относительно опоры по оси Y, В
+		double yref = oscill.ask_and_get_double(":WAVeform:YREFerence?\n");   // опора пл оси Y, отсчет
 
 		// 3. Считываем сырые коды CH1 (как раньше)
 		const uint16_t offset = 1;
@@ -38,7 +38,7 @@ int main()			// главная функция
 		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, offset, ticks);
 
 		// 4. Пересчитываем коды в вольты по формуле Rigol:
-		//    Volt = (raw - YORigin - YREFerence) * YINCrement [web:298][web:410]
+		//    Volt = (raw - YORigin - YREFerence) * YINCrement
 		std::vector<double> ch1_volts(data1.size());
 		for (size_t i = 0; i < data1.size(); ++i)
 		{
