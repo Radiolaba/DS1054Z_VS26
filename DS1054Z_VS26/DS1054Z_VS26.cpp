@@ -52,8 +52,6 @@ int main()			// главная функция
 	}
 	//новое
 
-
-
 	/*
 	{
 		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, 1, 60000);
@@ -61,6 +59,35 @@ int main()			// главная функция
 		saveSignalToTxt(to_double_vector(data2), 200e-9, "ch2.txt");
 	}
 	*/
+
+	// ---------- CH2 в Вольтах ----------
+	{
+		// 1. Выбрать CH2 как источник
+		oscill.writeCommand(":WAVeform:SOURce CHANnel2\n");
+
+		// 2. Параметры вертикального масштабирования CH2
+		double yinc2 = oscill.ask_and_get_double(":WAVeform:YINCrement?\n");   // В/код [web:290][web:392]
+		double yor2 = oscill.ask_and_get_double(":WAVeform:YORigin?\n");      // В [web:290][web:392]
+		double yref2 = oscill.ask_and_get_double(":WAVeform:YREFerence?\n");   // опорный код [web:290][web:392]
+
+		// 3. Сырые отсчёты CH2
+		const uint16_t offset = 1;
+		const uint32_t ticks = 60000;
+		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, offset, ticks);
+
+		// 4. Пересчёт CH2 в Вольты
+		std::vector<double> ch2_volts(data2.size());
+		for (size_t i = 0; i < data2.size(); ++i)
+		{
+			double raw = static_cast<double>(data2[i]);
+			ch2_volts[i] = (raw - yor2 - yref2) * yinc2;  // та же формула [web:290][web:392]
+		}
+
+		// 5. Сохранение CH2
+		system("del ch2.txt");
+		saveSignalToTxt(ch2_volts, 200e-9, "ch2.txt");
+	}
+
 	return 0;
 }
 // необходимо добавить преобразование vector<uint16_t> в пары (time, voltage) и запись их в файл
