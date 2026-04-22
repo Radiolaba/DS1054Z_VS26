@@ -16,6 +16,7 @@ int main() // главная функция
 
     std::vector<double> ch1_volts;
     std::vector<double> ch2_volts;
+    std::vector<double> time_sec;
 
     // ---------- CH1 в Вольтах ----------
     {
@@ -41,12 +42,12 @@ int main() // главная функция
             ch1_volts[i] = (raw - yor1 - yref1) * yinc1;
         }
 
-        // 5. Сохраняем CH1 в Вольтах
-        system("del ch1.txt");
-        saveSignalToTxt(ch1_volts, 200e-9, "ch1.txt");
+        // 5. Сохраняем CH1 в Вольтах (убрано, т.к. теперь CSV)
+        //system("del ch1.txt");
+        //saveSignalToTxt(ch1_volts, 200e-9, "ch1.txt");
     }
 
-    // ---------- CH2: запись времени в секундах в ch2.txt ----------
+    // ---------- CH2: напряжение и время ----------
     {
         // 1. Выбираем CH2 как источник
         oscill.writeCommand(":WAVeform:SOURce CHANnel2\n");
@@ -74,16 +75,26 @@ int main() // главная функция
         double xorig = 0.0;
         oscill.getTimeScale(xinc, xorig); // xincrement и xorigin, секунды [web:392][web:298]
 
+
         // 6. Формируем вектор времени: t[i] = xorig + xinc * i
-        std::vector<double> time_sec(data2.size());
+        
+        time_sec.resize(data2.size());
+
         for (size_t i = 0; i < data2.size(); ++i)
         {
             time_sec[i] = xorig + xinc * static_cast<double>(i);
         }
 
-        // 7. Сохраняем время в секундах в ch2.txt
-        system("del ch2.txt");
-        saveSignalToTxt(time_sec, 200e-9, "ch2.txt");
+        // 7. Сохраняем время в секундах в ch2.txt - не нужно, т.к. CSV
+        //system("del ch2.txt");
+        //saveSignalToTxt(time_sec, 200e-9, "ch2.txt");
+    }
+
+    // ---------- Запись CSV: V1, V2, t ----------
+    {
+        // Файл в формате CSV: три столбца без заголовка
+        // 1: напряжение CH1, 2: напряжение CH2, 3: время в секундах
+        saveToCsv3Columns(ch1_volts, ch2_volts, time_sec, "data.csv");
     }
 
     // Возвращаем осциллограф в режим RUN
