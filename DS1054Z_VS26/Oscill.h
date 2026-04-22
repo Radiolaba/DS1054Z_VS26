@@ -24,6 +24,7 @@ public:
     int ask_and_print_answer(ViConstString inquiry);
     double ask_and_get_double(ViConstString inquire); // метод для получения параметров вертикального масштабирования в double
     void writeCommand(ViConstString cmd);   // метод-обертка для отправки SCPI-команд через объект oscill без прямого доступа к DEVICE (убирает ошибку из-за приватности члена)
+    void getTimeScale(double& xinc, double& xorig);
 
 private:
     ViSession DEVICE;

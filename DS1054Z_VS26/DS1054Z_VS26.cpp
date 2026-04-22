@@ -3,125 +3,91 @@
 #include "files.h"
 #include "math.h"
 
-int main()			// главная функция
+int main() // главная функция
 {
-	OscilloscopeRigol_DS1054Z oscill; // создание объекта oscill класса OscilloscopeRigol_DS1054Z для взаимодействия с осциллографом
-	oscill.connect(); // вызов метода подключения к осциллографу
-	Sleep(600);			// пауза 600 мс
-	oscill.setup();		// вызов метода настройки осциллографа
-	Sleep(600);			// пауза 600 мс
-	
-	oscill.writeCommand(":STOP\n"); // остановка перед считыванием буфера и настроек верт. разрешения каналов
+    OscilloscopeRigol_DS1054Z oscill; // объект для взаимодействия с осциллографом
+    oscill.connect();                 // подключение к осциллографу
+    Sleep(600);                       // пауза 600 мс
+    oscill.setup();                   // настройка осциллографа
+    Sleep(600);                       // пауза 600 мс
 
-	std::vector<double> ch1_volts;
-	std::vector<double> ch2_volts;
+    // Останавливаем осциллограф перед считыванием буфера и параметров
+    oscill.writeCommand(":STOP\n");
 
-	/*
-	{
-		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, 1, 60000); // возвращение отсчетов BYTE-данных, приведенных к uint16_t
-		system("del ch1.txt"); // очистка/удаление старых данных (или файла?)
-		saveSignalToTxt(to_double_vector(data1), 200e-9, "ch1.txt"); // запись отсчетов в ch1.txt
-	}
-	*/
+    std::vector<double> ch1_volts;
+    std::vector<double> ch2_volts;
 
-	//новое
-	{
-		// CH1 в вольтах
+    // ---------- CH1 в Вольтах ----------
+    {
+        // 1. Выбираем CH1 как источник для параметров вертикального масштабирования
+        oscill.writeCommand(":WAVeform:SOURce CHANnel1\n");
 
-		// 1. Выбираем CH1 как источник для параметров вертикального масштабирования
-		oscill.writeCommand(":WAVeform:SOURce CHANnel1\n");
+        // 2. Считываем параметры вертикального масштабирования CH1
+        double yinc1 = oscill.ask_and_get_double(":WAVeform:YINCrement?\n"); // шаг по оси Y, В/отсчет [web:298][web:291]
+        double yor1 = oscill.ask_and_get_double(":WAVeform:YORigin?\n");    // вертикальное смещение, В [web:298][web:291]
+        double yref1 = oscill.ask_and_get_double(":WAVeform:YREFerence?\n"); // опора по оси Y, отсчет [web:298][web:291]
 
-		// 2. Считываем параметры вертикального масштабирования CH1
-		double yinc1 = oscill.ask_and_get_double(":WAVeform:YINCrement?\n");   // шаг по оси Y между соседними отсчетами, В/отсчет
-		double yor1 = oscill.ask_and_get_double(":WAVeform:YORigin?\n");      // вертикальное смещение относительно опоры по оси Y, В
-		double yref1 = oscill.ask_and_get_double(":WAVeform:YREFerence?\n");   // опора пл оси Y, отсчет
+        // 3. Считываем сырые коды CH1
+        const uint16_t offset = 1;
+        const uint32_t ticks = 60000;
+        std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, offset, ticks);
 
-		// 3. Считываем сырые коды CH1 (как раньше)
-		const uint16_t offset = 1;
-		const uint32_t ticks = 60000;
-		std::vector<uint16_t> data1 = oscill.getRaw8BitSignal(1, offset, ticks);
+        // 4. Пересчитываем коды в Вольты по формуле Rigol:
+        //    Volt = (raw - YORigin - YREFerence) * YINCrement [web:392][web:298]
+        ch1_volts.resize(data1.size());
+        for (size_t i = 0; i < data1.size(); ++i)
+        {
+            double raw = static_cast<double>(data1[i]);
+            ch1_volts[i] = (raw - yor1 - yref1) * yinc1;
+        }
 
-		// 4. Пересчитываем коды в вольты по формуле Rigol:
-		//    Volt = (raw - YORigin - YREFerence) * YINCrement
-		
-		
-		//std::vector<double> ch1_volts(data1.size()); // зачем-то убрал
-		ch1_volts.resize(data1.size());
+        // 5. Сохраняем CH1 в Вольтах
+        system("del ch1.txt");
+        saveSignalToTxt(ch1_volts, 200e-9, "ch1.txt");
+    }
 
-		for (size_t i = 0; i < data1.size(); ++i)
-		{
-			double raw = static_cast<double>(data1[i]);
-			ch1_volts[i] = (raw - yor1 - yref1) * yinc1;
-		}
+    // ---------- CH2: запись времени в секундах в ch2.txt ----------
+    {
+        // 1. Выбираем CH2 как источник
+        oscill.writeCommand(":WAVeform:SOURce CHANnel2\n");
 
-		// 5. Сохраняем CH1 в вольтах
-		system("del ch1.txt");
-		saveSignalToTxt(ch1_volts, 200e-9, "ch1.txt");
-	}
-	//новое
+        // 2. Считываем параметры вертикального масштабирования CH2
+        double yinc2 = oscill.ask_and_get_double(":WAVeform:YINCrement?\n"); // В/отсчет [web:298][web:291]
+        double yor2 = oscill.ask_and_get_double(":WAVeform:YORigin?\n");    // В [web:298][web:291]
+        double yref2 = oscill.ask_and_get_double(":WAVeform:YREFerence?\n"); // опорный код [web:298][web:291]
 
-	/*
-	{
-		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, 1, 60000);
-		system("del ch2.txt");
-		saveSignalToTxt(to_double_vector(data2), 200e-9, "ch2.txt");
-	}
-	*/
+        // 3. Сырые отсчёты CH2
+        const uint16_t offset = 1;
+        const uint32_t ticks = 60000;
+        std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, offset, ticks);
 
-	// ---------- CH2 в Вольтах ----------
-	{
-		// 1. Выбрать CH2 как источник
-		oscill.writeCommand(":WAVeform:SOURce CHANnel2\n");
+        // 4. При желании пересчёт CH2 в Вольты (оставляем, чтобы ch2_volts был готов для будущего использования)
+        ch2_volts.resize(data2.size());
+        for (size_t i = 0; i < data2.size(); ++i)
+        {
+            double raw = static_cast<double>(data2[i]);
+            ch2_volts[i] = (raw - yor2 - yref2) * yinc2;
+        }
 
-		// 2. Параметры вертикального масштабирования CH2
-		double yinc2 = oscill.ask_and_get_double(":WAVeform:YINCrement?\n");   // В/код [web:290][web:392]
-		double yor2 = oscill.ask_and_get_double(":WAVeform:YORigin?\n");      // В [web:290][web:392]
-		double yref2 = oscill.ask_and_get_double(":WAVeform:YREFerence?\n");   // опорный код [web:290][web:392]
+        // 5. Получаем временную шкалу от осциллографа (XINC и XORIG для текущего кадра)
+        double xinc = 0.0;
+        double xorig = 0.0;
+        oscill.getTimeScale(xinc, xorig); // xincrement и xorigin, секунды [web:392][web:298]
 
-		// 3. Сырые отсчёты CH2
-		const uint16_t offset = 1;
-		const uint32_t ticks = 60000;
-		std::vector<uint16_t> data2 = oscill.getRaw8BitSignal(2, offset, ticks);
+        // 6. Формируем вектор времени: t[i] = xorig + xinc * i
+        std::vector<double> time_sec(data2.size());
+        for (size_t i = 0; i < data2.size(); ++i)
+        {
+            time_sec[i] = xorig + xinc * static_cast<double>(i);
+        }
 
+        // 7. Сохраняем время в секундах в ch2.txt
+        system("del ch2.txt");
+        saveSignalToTxt(time_sec, 200e-9, "ch2.txt");
+    }
 
-		/* запись напряжения временно отключена
-		// 4. Пересчёт CH2 в Вольты
-		std::vector<double> ch2_volts(data2.size());
-		for (size_t i = 0; i < data2.size(); ++i)
-		{
-			double raw = static_cast<double>(data2[i]);
-			ch2_volts[i] = (raw - yor2 - yref2) * yinc2;  // та же формула [web:290][web:392]
-		}
+    // Возвращаем осциллограф в режим RUN
+    oscill.writeCommand(":RUN\n");
 
-		// 5. Сохранение CH2
-		system("del ch2.txt");
-		saveSignalToTxt(ch2_volts, 200e-9, "ch2.txt");
-		*/
-
-		ch2_volts.resize(data2.size());
-		for (size_t i = 0; i < data2.size(); ++i)
-		{
-			double raw = static_cast<double>(data2[i]);
-			ch2_volts[i] = (raw - yor2 - yref2) * yinc2;
-		}
-
-		// Вместо записи напряжения CH2 в ch2.txt записываем "отсчёты времени" по индексу: 0,1,2,...
-		std::vector<double> time_index(data2.size());
-		for (size_t i = 0; i < data2.size(); ++i)
-		{
-			time_index[i] = static_cast<double>(i);  // просто номер точки
-		}
-
-		system("del ch2.txt");
-		// используем ту же функцию, что и раньше, но подаём ей time_index
-		saveSignalToTxt(time_index, 200e-9, "ch2.txt");
-
-	}
-
-	oscill.writeCommand(":RUN\n"); // После завершения считывания всех каналов вернуть осциллограф в режим RUN
-
-
-	return 0;
+    return 0;
 }
-// необходимо добавить преобразование vector<uint16_t> в пары (time, voltage) и запись их в файл
-// необходимо добавить oscill.disconnect() в конец

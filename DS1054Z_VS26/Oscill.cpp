@@ -54,6 +54,50 @@ void OscilloscopeRigol_DS1054Z::writeCommand(ViConstString cmd)
 	viPrintf(DEVICE, cmd);
 }
 
+void OscilloscopeRigol_DS1054Z::getTimeScale(double& xinc, double& xorig)
+{
+	char buffer[256];
+	ViUInt32 bytes_read;
+	ViStatus status;
+
+	// Запрос префикса
+	viPrintf(DEVICE, ":WAVeform:PREamble?\n");
+	status = viRead(DEVICE, (ViBuf)buffer, 255, &bytes_read);
+
+	if (status < VI_SUCCESS) {
+		printf("Reading error: 0x%08X\n", status);
+		throw std::runtime_error("Error reading waveform preamble");
+	}
+
+	buffer[bytes_read] = 0;
+
+	// Формат префикса:
+	// fmt, typ, pnts, cnt, xincrement, xorigin, xreference, yincrement, yorigin, yreference [web:392]
+	std::string s(buffer);
+	std::vector<std::string> tokens;
+
+	size_t start = 0;
+	while (true) {
+		size_t pos = s.find(',', start);
+		if (pos == std::string::npos) {
+			tokens.push_back(s.substr(start));
+			break;
+		}
+		else {
+			tokens.push_back(s.substr(start, pos - start));
+			start = pos + 1;
+		}
+	}
+
+	if (tokens.size() < 10) {
+		throw std::runtime_error("Invalid waveform preamble format");
+	}
+
+	// xinc — 5-й элемент, xorig — 6-й (0‑индексация: 4 и 5) [web:392]
+	xinc = atof(tokens[4].c_str());  // шаг по времени между точками, секунды
+	xorig = atof(tokens[5].c_str());  // время первой точки, секунды
+}
+
 // настройка осциллографа (работает)
 void OscilloscopeRigol_DS1054Z::setup()
 {
