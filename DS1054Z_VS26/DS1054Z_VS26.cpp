@@ -3,16 +3,10 @@
 #include "files.h"
 #include "math.h"
 
-const uint32_t NUM_POINTS = 60000; // число точек (глубина записи)
+const uint32_t NUM_POINTS = 60000; // число точек (12M); раньше было 60000
 
 int main() // главная функция
 {
-    setlocale(LC_ALL, ""); // если нужно корректное отображение русского текста в консоли
-
-    while (true)
-    {
-        std::cout << "Measurement started..." << std::endl;
-
     OscilloscopeRigol_DS1054Z oscill; // объект для взаимодействия с осциллографом
     oscill.connect();                 // подключение к осциллографу
     Sleep(600);                       // пауза 600 мс
@@ -107,22 +101,6 @@ int main() // главная функция
 
     // Возвращаем осциллограф в режим RUN
     oscill.writeCommand(":RUN\n");
-
-    std::cout << "Well done. All data acquired and saved to data.csv." << std::endl;
-    std::cout << "Type 1 to restart, any other key to exit: ";
-
-    int cmd = 0;
-    std::cin >> cmd;
-
-    if (cmd != 1)
-    {
-        std::cout << "Exiting." << std::endl;
-        break; // выходим из while(true), программа завершается
-    }
-
-    // Если введено 1, цикл while повторится,
-    // всё начнётся сначала: новое подключение, настройка, измерение, запись.
-    }
 
     return 0;
 }
