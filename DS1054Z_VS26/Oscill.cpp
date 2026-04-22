@@ -7,6 +7,8 @@
 
 using namespace std;
 
+
+
 // подключение к осциллографу (работает)
 void OscilloscopeRigol_DS1054Z::connect()
 {
@@ -105,7 +107,7 @@ void OscilloscopeRigol_DS1054Z::setup()
 	string setup_commands[] = {
 		//":TIMebase[:MAIN]:SCALe 0.0002\n",  // развертка по времени
 		":ACQuire:TYPE HRESolution\n",// режим сбора: Высокое разрешение
-		":ACQuire:MDEPth 60000\n",// глубина записи: 60k
+		":ACQuire:MDEPth 60000\n",// глубина записи: 12M
 		//":TRIGger:COUPling DC\n",// связь для триггера
 		//":TRIGger:MODE EDGE\n",// тип триггера: по фронту
 		//":TRIGger:SWEep SINGle\n", // тип триггера: Single
