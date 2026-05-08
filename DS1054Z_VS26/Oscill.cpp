@@ -14,8 +14,8 @@ void OscilloscopeRigol_DS1054Z::connect()
 {
 	cout << "Started DS1054Z connection" << endl; // сообщение о начале соединения
 	// Адрес прибора
-	//const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA231001099::INSTR"; //домашний осцилл
-	const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA255005161::INSTR"; //осцилл в лаборатории
+	const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA231001099::INSTR"; //домашний осцилл
+	//const char* resource = "USB0::0x1AB1::0x04CE::DS1ZA255005161::INSTR"; //осцилл в лаборатории
 
 	DEVICE = VI_NULL;
 	RESOURCE_MANAGER = VI_NULL;
