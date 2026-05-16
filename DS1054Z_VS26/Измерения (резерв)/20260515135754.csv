@@ -1,0 +1,12 @@
+Date:2026.05.15
+Time:13:57:56
+File_name:C:\LCR Meter\20260515135754.csv
+Version:2.00
+Instrument Version:1.39
+***************LIST SETUP***************
+Step,Freq,Level,speed,DC Bais,AC-Range,DC-Range,Trig Delay,AC/DC Delay,Average,ALC,RO,1-Func,1-Comp Mode,1-Standard,1-High,1-Low,2-Func,2-Comp Mode,2-Standard,2-High,2-Low,3-Func,3-Comp Mode,3-Standard,3-High,3-Low,4-Func,4-Comp Mode,4-Standard,4-High,4-Low
+1,10kHz,2V,SLOW2,0,AUTO,AUTO,0,0,5,OFF,100,Z,OFF,0,0,0,R,OFF,0,0,0,X,OFF,0,0,0,OFF,OFF,0,0,0
+2,20,000kHz,2V,SLOW2,0,AUTO,AUTO,0,0,5,OFF,100,Z,OFF,0,0,0,R,OFF,0,0,0,X,OFF,0,0,0,OFF,OFF,0,0,0
+3,30,000kHz,2V,SLOW2,0,AUTO,AUTO,0,0,5,OFF,100,Z,OFF,0,0,0,R,OFF,0,0,0,X,OFF,0,0,0,OFF,OFF,0,0,0
+4,40,000kHz,2V,SLOW2,0,AUTO,AUTO,0,0,5,OFF,100,Z,OFF,0,0,0,R,OFF,0,0,0,X,OFF,0,0,0,OFF,OFF,0,0,0
+5,50,000kHz,2V,SLOW2,0,AUTO,AUTO,0,0,5,OFF,100,Z,OFF,0,0,0,R,OFF,0,0,0,X,OFF,0,0,0,OFF,OFF,0,0,0
